@@ -83,6 +83,18 @@
     .nav-label { transition: opacity var(--transition); }
     body.sidebar-collapsed .nav-label { opacity: 0; }
 
+    /* ══ SUBMENU ══ */
+    .nav-item-wrap { position: relative; }
+    .nav-item .arrow { margin-left: auto; flex-shrink: 0; width: 14px; height: 14px; stroke: currentColor; fill: none; stroke-width: 2.5; transition: transform var(--transition); }
+    .nav-item-wrap.open .arrow { transform: rotate(90deg); }
+    .submenu { overflow: hidden; max-height: 0; transition: max-height 0.28s ease; }
+    .nav-item-wrap.open .submenu { max-height: 200px; }
+    .sub-item { display: flex; align-items: center; gap: 9px; padding: 8px 16px 8px 44px; margin: 1px 8px; border-radius: 8px; color: rgba(255,255,255,0.5); font-size: 12.5px; font-weight: 500; text-decoration: none; cursor: pointer; transition: background 0.15s, color 0.15s; white-space: nowrap; }
+    .sub-item:hover { background: rgba(255,255,255,0.07); color: white; }
+    .sub-dot { width: 6px; height: 6px; border-radius: 50%; background: rgba(255,255,255,0.3); flex-shrink: 0; }
+    .sub-item:hover .sub-dot { background: #7B93FF; }
+    body.sidebar-collapsed .submenu { display: none; }
+    body.sidebar-collapsed .arrow { display: none; }
     /* Tooltip on collapsed */
     body.sidebar-collapsed .nav-item:hover::after {
       content: attr(data-label);
@@ -397,6 +409,7 @@
           <div class="sub-dot"></div> Sales History
         </a>
       </div>
+    </div>
 
     <div class="nav-section-label">More</div>
     <a class="nav-item" href="#" data-label="Reports">
@@ -582,6 +595,12 @@
 <script>
   // ── Toggle sidebar
   function toggleSidebar() {
+  // ── Sales submenu toggle
+  function toggleSalesMenu(e) {
+    e.preventDefault();
+    const wrap = document.getElementById("sales-wrap");
+    wrap.classList.toggle("open");
+  }
     document.body.classList.toggle('sidebar-collapsed');
   }
 
@@ -644,7 +663,7 @@
     }
   });
 </script>
-<script type="module" src="app.js"></script>
 
 </body>
 </html>
+
