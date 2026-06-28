@@ -379,21 +379,23 @@
 
       <br/>
 
-      <div class="error-msg" id="error-msg">Invalid email or password. Please try again.</div>
+      <div class="error-msg" id="error-msg"></div>
 
+      <form id="loginForm" onsubmit="return false;">
       <div class="form-group">
         <label for="email">Email</label>
-        <input type="email" id="email" placeholder="Enter your email" />
+        <input type="email" id="email" placeholder="Enter your email" required/>
       </div>
 
       <div class="form-group">
         <label for="password">Password</label>
-        <input type="password" id="password" placeholder="Enter your password" />
+        <input type="password" id="password" placeholder="Enter your password" required/>
       </div>
 
       <div class="forgot"><a href="#">Forgot password?</a></div>
 
-      <button class="btn-signin" id="signin-btn" onclick="handleLogin()">Sign In</button>
+      <button class="btn-signin" id="signin-btn" type="submit">Sign In</button>
+      </form>
 
       <div class="divider"><span>- Or sign in with -</span></div>
 
@@ -429,45 +431,34 @@
   </div>
 
   <script>
-    // Hide splash after 2 seconds
+    // Splash hide
     setTimeout(() => {
       document.getElementById('splash').classList.add('hide');
     }, 2000);
 
-    function handleLogin() {
-      const email = document.getElementById('email').value.trim();
-      const password = document.getElementById('password').value;
-      const btn = document.getElementById('signin-btn');
+    // Show error nicely instead of alert
+    window.showLoginError = function(msg) {
       const err = document.getElementById('error-msg');
+      const btn = document.getElementById('signin-btn');
+      err.textContent = msg;
+      err.style.display = 'block';
+      btn.textContent = 'Sign In';
+      btn.classList.remove('loading');
+    };
 
-      err.style.display = 'none';
-
-      if (!email || !password) {
-        err.textContent = 'Please enter your email and password.';
-        err.style.display = 'block';
-        return;
+    // Loading state on submit
+    document.addEventListener('DOMContentLoaded', () => {
+      const form = document.getElementById('loginForm');
+      if (form) {
+        form.addEventListener('submit', () => {
+          const btn = document.getElementById('signin-btn');
+          btn.textContent = 'Signing in...';
+          btn.classList.add('loading');
+        });
       }
-
-      btn.textContent = 'Signing in...';
-      btn.classList.add('loading');
-
-      // Firebase auth aayega yahan
-      setTimeout(() => {
-        btn.textContent = 'Sign In';
-        btn.classList.remove('loading');
-        // dashboard.html pe redirect hoga
-        // window.location.href = 'dashboard.html';
-        alert('Firebase connect karo phir redirect hoga dashboard pe!');
-      }, 1500);
-    }
-
-    // Enter key support
-    document.addEventListener('keydown', (e) => {
-      if (e.key === 'Enter') handleLogin();
     });
   </script>
-<script type="module" src="app.js"></script>
+  <script type="module" src="app.js"></script>
 
 </body>
 </html>
-
