@@ -383,10 +383,20 @@
       <svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg>
       <span class="nav-label">Customers</span>
     </a>
-    <a class="nav-item" href="#" data-label="Sales">
-      <svg viewBox="0 0 24 24"><path d="M3 3h18v18H3zM3 9h18M9 21V9"/></svg>
-      <span class="nav-label">Sales</span>
-    </a>
+    <div class="nav-item-wrap" id="sales-wrap">
+      <a class="nav-item" href="#" data-label="Sales" onclick="toggleSalesMenu(event)">
+        <svg viewBox="0 0 24 24"><path d="M3 3h18v18H3zM3 9h18M9 21V9"/></svg>
+        <span class="nav-label">Sales</span>
+        <svg class="arrow" viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg>
+      </a>
+      <div class="submenu">
+        <a class="sub-item" href="create-order.html">
+          <div class="sub-dot"></div> Add New Sale
+        </a>
+        <a class="sub-item" href="sales-history.html">
+          <div class="sub-dot"></div> Sales History
+        </a>
+      </div>
 
     <div class="nav-section-label">More</div>
     <a class="nav-item" href="#" data-label="Reports">
