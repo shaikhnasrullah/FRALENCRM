@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+  <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8"/>
@@ -581,7 +581,26 @@
 
 <div class="success-toast" id="toast">✅ Order saved successfully!</div>
 
-<script>
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+  import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+  import { getFirestore, collection, addDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+  const fbApp = initializeApp({
+    apiKey: "AIzaSyBHSFdvPAI1kz91whHbTj0rgUefVhPthLc",
+    authDomain: "loginpage1-16430.firebaseapp.com",
+    projectId: "loginpage1-16430",
+    storageBucket: "loginpage1-16430.firebasestorage.app",
+    messagingSenderId: "438297643443",
+    appId: "1:438297643443:web:a2a75a2873d2746613e3c6"
+  });
+  const auth = getAuth(fbApp);
+  const db = getFirestore(fbApp);
+
+  onAuthStateChanged(auth, (user) => {
+    if (!user) window.location.href = "index.html";
+  });
+
   const ROWS = 10;
   const PRODUCTS = {
     'Frame':        [{ name: 'Ray-Ban RB2140', price: 3500 }, { name: 'Oakley OX8046', price: 5200 }, { name: 'Titan Frame TF01', price: 1800 }],
@@ -715,7 +734,7 @@
     document.getElementById('t-pending').textContent  = pending.toFixed(2);
   }
 
-  function saveOrder() {
+  window.saveOrder = function () {
     const branch = document.getElementById('branch').value;
     const name   = document.getElementById('cust-name').value.trim();
     if (!branch) { alert('Branch select karo!'); return; }
@@ -727,50 +746,94 @@
     } else {
       finishSave();
     }
-  }
+  };
 
-  function closeRx() {
+  window.closeRx = function () {
     document.getElementById('rx-modal').classList.remove('open');
-  }
+  };
 
-  function saveRx() {
-    closeRx();
+  window.saveRx = function () {
+    window.closeRx();
     finishSave();
+  };
+
+  function collectProducts() {
+    const items = [];
+    for (let i = 1; i <= ROWS; i++) {
+      const type  = document.querySelector(`.type-select[data-row="${i}"]`).value;
+      const prodSel = document.querySelector(`.prod-select[data-row="${i}"]`);
+      const prodName = prodSel.options[prodSel.selectedIndex]?.text || '';
+      const price = parseFloat(document.querySelector(`.price-input[data-row="${i}"]`).value) || 0;
+      const gst   = parseFloat(document.querySelector(`.gst-input[data-row="${i}"]`).value) || 0;
+      const disc  = parseFloat(document.querySelector(`.disc-input[data-row="${i}"]`).value) || 0;
+      const total = parseFloat(document.querySelector(`.total-input[data-row="${i}"]`).value) || 0;
+      const barcode = document.querySelector(`.barcode-input[data-row="${i}"]`).value;
+      if (price > 0) {
+        items.push({ type, name: prodName, barcode, price, gstPct: gst, discPct: disc, total });
+      }
+    }
+    return items;
   }
 
-  function finishSave() {
-    const toast = document.getElementById('toast');
-    toast.style.display = 'block';
-    setTimeout(() => { toast.style.display = 'none'; }, 3000);
-    // Firebase mein save hoga yahan
-    // await addDoc(collection(db, "orders"), { ... });
+  async function finishSave() {
+    const saveBtn = document.querySelector('.save-btn');
+    saveBtn.textContent = 'Saving...';
+    saveBtn.disabled = true;
+
+    const order = {
+      orderNo: document.getElementById('order-no').value,
+      branch: document.getElementById('branch').value,
+      orderDate: document.getElementById('order-date').value,
+      deliveryDate: document.getElementById('delivery-date').value,
+      mobile: document.getElementById('mobile').value.trim(),
+      customerName: document.getElementById('cust-name').value.trim(),
+      email: document.getElementById('email').value.trim(),
+      salesPerson: document.getElementById('salesperson').value,
+      gender: document.getElementById('gender').value,
+      address: document.getElementById('address').value.trim(),
+      notes: document.getElementById('notes').value.trim(),
+      products: collectProducts(),
+      totals: {
+        basic: parseFloat(document.getElementById('t-basic').textContent) || 0,
+        gst: parseFloat(document.getElementById('t-gst').textContent) || 0,
+        sales: parseFloat(document.getElementById('t-sales').textContent) || 0,
+        discount: parseFloat(document.getElementById('t-discount').textContent) || 0,
+        payable: parseFloat(document.getElementById('t-payable').textContent) || 0,
+        advance: parseFloat(document.getElementById('advance').value) || 0,
+        pending: parseFloat(document.getElementById('t-pending').textContent) || 0,
+      },
+      status: 'pending',
+      hasLens,
+      prescription: hasLens ? {
+        re: { sph: document.getElementById('re-sph').value, cyl: document.getElementById('re-cyl').value, axis: document.getElementById('re-axis').value, add: document.getElementById('re-add').value, va: document.getElementById('re-va').value },
+        le: { sph: document.getElementById('le-sph').value, cyl: document.getElementById('le-cyl').value, axis: document.getElementById('le-axis').value, add: document.getElementById('le-add').value, va: document.getElementById('le-va').value },
+        pd: document.getElementById('rx-pd').value,
+        doctor: document.getElementById('rx-doctor').value,
+        lensType: document.getElementById('rx-lens-type').value,
+        coating: document.getElementById('rx-coating').value,
+        fitting: document.getElementById('rx-fitting').value,
+        remarks: document.getElementById('rx-remarks').value
+      } : null,
+      createdAt: new Date().toISOString()
+    };
+
+    try {
+      await addDoc(collection(db, "orders"), order);
+      const toast = document.getElementById('toast');
+      toast.style.display = 'block';
+      setTimeout(() => {
+        toast.style.display = 'none';
+        window.location.href = 'dashboard.html';
+      }, 1800);
+    } catch (err) {
+      alert('Order save fail hua: ' + err.message);
+      saveBtn.textContent = '💾 Save Order';
+      saveBtn.disabled = false;
+    }
   }
 
   buildRows();
   calcTotals();
-</script>
-
-<!-- Firebase Auth Guard -->
-<script type="module">
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-  import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
-
-  const app = initializeApp({
-    apiKey: "AIzaSyBHSFdvPAI1kz91whHbTj0rgUefVhPthLc",
-    authDomain: "loginpage1-16430.firebaseapp.com",
-    projectId: "loginpage1-16430",
-    storageBucket: "loginpage1-16430.firebasestorage.app",
-    messagingSenderId: "438297643443",
-    appId: "1:438297643443:web:a2a75a2873d2746613e3c6"
-  });
-
-  const auth = getAuth(app);
-
-  onAuthStateChanged(auth, (user) => {
-    if (!user) {
-      window.location.href = "index.html";
-    }
-  });
 </script>
 
 </body>
