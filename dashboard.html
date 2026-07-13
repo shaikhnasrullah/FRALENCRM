@@ -83,6 +83,15 @@
       min-width: 200px;
     }
 
+    .stat-box.clickable {
+      cursor: pointer;
+      transition: box-shadow 0.15s;
+    }
+
+    .stat-box.clickable:hover {
+      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    }
+
     .stat-box h3 {
       margin: 0;
       font-size: 22px;
@@ -122,6 +131,17 @@
 
     th {
       background-color: #f5f5f5;
+    }
+
+    .cust-link {
+      color: #4F6BF0;
+      font-weight: bold;
+      cursor: pointer;
+      text-decoration: none;
+    }
+
+    .cust-link:hover {
+      text-decoration: underline;
     }
 
     .badge {
@@ -167,19 +187,19 @@
 
     <!-- Stats -->
     <div class="stats-row">
-      <div class="stat-box">
+      <div class="stat-box clickable" onclick="window.location.href='customers.html'">
         <h3 id="stat-customers">0</h3>
         <p>Total Customers</p>
       </div>
-      <div class="stat-box">
+      <div class="stat-box clickable" onclick="window.location.href='sales-history.html'">
         <h3 id="stat-today-sales">Rs. 0</h3>
         <p id="stat-today-orders">0 orders today</p>
       </div>
-      <div class="stat-box">
+      <div class="stat-box clickable" onclick="window.location.href='sales-history.html?status=pending'">
         <h3 id="stat-pending-orders">0</h3>
         <p>Pending Orders</p>
       </div>
-      <div class="stat-box">
+      <div class="stat-box clickable" onclick="window.location.href='sales-history.html?status=pending'">
         <h3 id="stat-balance-due">Rs. 0</h3>
         <p>Balance Due</p>
       </div>
@@ -208,24 +228,6 @@
     </table>
   </div>
 
-  <!-- Simple bar chart setup -->
-  <script>
-    var salesChart = new Chart(document.getElementById('salesChart'), {
-      type: 'bar',
-      data: {
-        labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
-        datasets: [{
-          label: 'Sales',
-          data: [0, 0, 0, 0, 0, 0],
-          backgroundColor: '#4F6BF0'
-        }]
-      },
-      options: {
-        responsive: true
-      }
-    });
-  </script>
-
   <!-- Firebase login check + data loading -->
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
@@ -245,6 +247,7 @@
     var app = initializeApp(firebaseConfig);
     var auth = getAuth(app);
     var db = getFirestore(app);
+    var salesChart = null;
 
     // check if user is logged in
     onAuthStateChanged(auth, function (user) {
@@ -274,20 +277,22 @@
     }
 
     // load all data from firestore
+    // NOTE: There is no separate "customers" collection. Every customer, along
+    // with their order count / spend / pending balance, is derived directly
+    // from the "orders" collection (grouped by mobile number). This keeps
+    // dashboard.html, customers.html, sales-history.html and
+    // customer-history.html all reading from one single source of truth.
     async function loadDashboardData() {
       try {
-        // get customers
-        var customerSnapshot = await getDocs(collection(db, "customers"));
-        var totalCustomers = customerSnapshot.size;
-        document.getElementById("stat-customers").textContent = totalCustomers;
-
-        // get orders
+        // get orders (single source of truth for everything below)
         var orderSnapshot = await getDocs(collection(db, "orders"));
         var todaySales = 0;
         var todayOrders = 0;
         var pendingOrders = 0;
         var balanceDue = 0;
         var allOrders = [];
+        var customerMobiles = {};
+        var monthlyTotals = {}; // key: "YYYY-M" -> total sales
 
         orderSnapshot.forEach(function (docItem) {
           var order = docItem.data();
@@ -296,6 +301,12 @@
 
           var payable = (order.totals && order.totals.payable) ? order.totals.payable : 0;
           var pending = (order.totals && order.totals.pending) ? order.totals.pending : 0;
+
+          // unique customers = unique mobile numbers across all orders
+          var mobileKey = (order.mobile || "").trim();
+          if (mobileKey) {
+            customerMobiles[mobileKey] = true;
+          }
 
           if (isToday(order.createdAt)) {
             todaySales += payable;
@@ -306,12 +317,51 @@
             pendingOrders += 1;
             balanceDue += pending;
           }
+
+          // bucket sales into month for the chart
+          if (order.createdAt) {
+            var d = new Date(order.createdAt);
+            if (!isNaN(d)) {
+              var monthKey = d.getFullYear() + "-" + d.getMonth();
+              monthlyTotals[monthKey] = (monthlyTotals[monthKey] || 0) + payable;
+            }
+          }
         });
+
+        var totalCustomers = Object.keys(customerMobiles).length;
+        document.getElementById("stat-customers").textContent = totalCustomers;
 
         document.getElementById("stat-today-sales").textContent = "Rs. " + todaySales;
         document.getElementById("stat-today-orders").textContent = todayOrders + " orders today";
         document.getElementById("stat-pending-orders").textContent = pendingOrders;
         document.getElementById("stat-balance-due").textContent = "Rs. " + balanceDue;
+
+        // build last 6 months labels + data from real orders
+        var monthNames = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+        var chartLabels = [];
+        var chartData = [];
+        var now = new Date();
+        for (var m = 5; m >= 0; m--) {
+          var refDate = new Date(now.getFullYear(), now.getMonth() - m, 1);
+          var key = refDate.getFullYear() + "-" + refDate.getMonth();
+          chartLabels.push(monthNames[refDate.getMonth()]);
+          chartData.push(monthlyTotals[key] || 0);
+        }
+
+        salesChart = new Chart(document.getElementById('salesChart'), {
+          type: 'bar',
+          data: {
+            labels: chartLabels,
+            datasets: [{
+              label: 'Sales',
+              data: chartData,
+              backgroundColor: '#4F6BF0'
+            }]
+          },
+          options: {
+            responsive: true
+          }
+        });
 
         // sort orders by newest first and show last 5
         allOrders.sort(function (a, b) {
@@ -333,9 +383,15 @@
             var pending = (order.totals && order.totals.pending) ? order.totals.pending : 0;
             var status = pending > 0 ? "Pending" : "Paid";
             var badgeClass = pending > 0 ? "badge-pending" : "badge-paid";
+            var custName = order.customerName || "-";
+            var custMobile = order.mobile || "";
 
             rows += "<tr>";
-            rows += "<td>" + (order.customerName || "-") + "</td>";
+            if (custMobile) {
+              rows += "<td><span class='cust-link' onclick=\"window.location.href='customer-history.html?mobile=" + encodeURIComponent(custMobile) + "'\">" + custName + "</span></td>";
+            } else {
+              rows += "<td>" + custName + "</td>";
+            }
             rows += "<td>" + itemCount + " item(s)</td>";
             rows += "<td>Rs. " + amount + "</td>";
             rows += "<td>" + dateStr + "</td>";
@@ -353,5 +409,6 @@
 
 </body>
 </html>
+
 
 
