@@ -1,4 +1,4 @@
-  <!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8"/>
@@ -119,9 +119,10 @@
       padding: 10px 14px; border-radius: 10px;
       border: 1.5px solid var(--border); background: white;
       cursor: pointer; font-size: 13px; font-weight: 600;
-      color: var(--navy); transition: background 0.15s;
+      color: var(--navy); transition: background 0.15s, border-color 0.15s;
     }
     .action-chip:hover { background: var(--accent-soft); }
+    .action-chip.active { border-color: var(--accent); background: var(--accent-soft); }
     .action-chip-icon {
       width: 32px; height: 32px; border-radius: 8px;
       display: flex; align-items: center; justify-content: center;
@@ -130,6 +131,7 @@
     .aci-gold { background: #FEF3C7; } .aci-gold svg { stroke: #D97706; }
     .aci-red  { background: #FEE2E2; } .aci-red svg  { stroke: var(--red); }
     .aci-blue { background: var(--accent-soft); } .aci-blue svg { stroke: var(--accent); }
+    .chip-note { font-size: 11px; font-weight: 500; color: var(--gray); margin-left: auto; }
 
     .totals-col {
       background: white; border-radius: 10px;
@@ -149,6 +151,7 @@
     }
     .total-row.highlight .lbl { font-weight: 700; color: var(--navy); font-size: 14px; }
     .total-row.highlight .val { background: var(--navy); color: white; font-size: 14px; }
+    .total-row.discount-row .val { background: #DCFCE7; color: #15803D; }
 
     /* PENDING AMOUNT */
     .pending-bar {
@@ -445,23 +448,26 @@
   <!-- TOTALS + ACTIONS -->
   <div class="totals-section">
     <div class="actions-col">
-      <div class="action-chip">
+      <div class="action-chip" id="chip-loyalty" onclick="window.applyLoyalty()">
         <div class="action-chip-icon aci-gold">
           <svg viewBox="0 0 24 24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
         </div>
         Redeem Loyalty Points
+        <span class="chip-note" id="loyalty-note"></span>
       </div>
-      <div class="action-chip">
+      <div class="action-chip" id="chip-coupon" onclick="window.applyCoupon()">
         <div class="action-chip-icon aci-red">
           <svg viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
         </div>
         Apply Discount Coupon
+        <span class="chip-note" id="coupon-note"></span>
       </div>
-      <div class="action-chip">
+      <div class="action-chip" id="chip-account" onclick="window.toggleCustomerAccount()">
         <div class="action-chip-icon aci-blue">
           <svg viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
         </div>
         Allow Customer Account
+        <span class="chip-note" id="account-note"></span>
       </div>
     </div>
 
@@ -469,7 +475,9 @@
       <div class="total-row"><span class="lbl">Total Basic Amount : Rs</span><span class="val" id="t-basic">0.00</span></div>
       <div class="total-row"><span class="lbl">Total GST Amount : Rs</span><span class="val" id="t-gst">0.00</span></div>
       <div class="total-row"><span class="lbl">Total Sales : Rs</span><span class="val" id="t-sales">0.00</span></div>
-      <div class="total-row"><span class="lbl">Discount Amount : Rs</span><span class="val" id="t-discount">0.00</span></div>
+      <div class="total-row"><span class="lbl">Item Discount : Rs</span><span class="val" id="t-discount">0.00</span></div>
+      <div class="total-row discount-row"><span class="lbl">Coupon Discount : Rs</span><span class="val" id="t-coupon">0.00</span></div>
+      <div class="total-row discount-row"><span class="lbl">Loyalty Discount : Rs</span><span class="val" id="t-loyalty">0.00</span></div>
       <div class="total-row"><span class="lbl">Round Off : Rs</span><span class="val" id="t-roundoff">0.00</span></div>
       <div class="total-row"><span class="lbl">Payable Amount : Rs</span><span class="val" id="t-payable">0.00</span></div>
       <div class="total-row">
@@ -478,14 +486,14 @@
       </div>
       <div class="total-row"><span class="lbl">Customer Account : Rs</span><span class="val" id="t-cust-acc">0.00</span></div>
       <div class="total-row"><span class="lbl">Advance Amount : Rs</span>
-        <input type="number" id="advance" placeholder="0.00" oninput="calcTotals()"
+        <input type="number" id="advance" placeholder="0.00" oninput="window.calcTotals()"
           style="border:1.5px solid #d1d5db;border-radius:6px;padding:5px 8px;font-size:13px;width:100px;text-align:right"/>
       </div>
       <div class="total-row highlight"><span class="lbl">Pending Amount : Rs</span><span class="val" id="t-pending">0.00</span></div>
     </div>
   </div>
 
-  <button class="save-btn" onclick="saveOrder()">💾 Save Order</button>
+  <button class="save-btn" onclick="window.saveOrder()">💾 Save Order</button>
 
 </div><!-- /container -->
 
@@ -494,7 +502,7 @@
   <div class="modal">
     <div class="modal-header">
       <h2>👁 Prescription Details</h2>
-      <button class="modal-close" onclick="closeRx()">
+      <button class="modal-close" onclick="window.closeRx()">
         <svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
       </button>
     </div>
@@ -577,8 +585,8 @@
     </div>
 
     <div class="modal-footer">
-      <button class="btn-cancel" onclick="closeRx()">Skip</button>
-      <button class="btn-save-rx" onclick="saveRx()">✅ Save Prescription & Order</button>
+      <button class="btn-cancel" onclick="window.closeRx()">Skip</button>
+      <button class="btn-save-rx" onclick="window.saveRx()">✅ Save Prescription & Order</button>
     </div>
   </div>
 </div>
@@ -613,7 +621,19 @@
     'Contact Lens': [{ name: 'Acuvue Moist', price: 900 }, { name: 'Air Optix', price: 1100 }],
   };
 
+  // Coupon codes: code -> percentage off Total Sales
+  const COUPONS = {
+    'FRALEN10': 10,
+    'KETO15': 15,
+    'WELCOME5': 5
+  };
+
   let hasLens = false;
+  let couponPct = 0;
+  let couponCode = '';
+  let loyaltyDiscountAmt = 0;
+  let loyaltyPointsUsed = 0;
+  let allowCustomerAccount = false;
 
   // Init dates
   const now = new Date();
@@ -642,7 +662,7 @@
         <td class="row-num">${i}</td>
         <td><input type="text" placeholder="Scan/Enter" class="barcode-input" data-row="${i}"/></td>
         <td>
-          <select class="type-select" data-row="${i}" onchange="onTypeChange(${i})">
+          <select class="type-select" data-row="${i}" onchange="window.onTypeChange(${i})">
             <option value="">Select Type</option>
             <option>Frame</option>
             <option>Lens</option>
@@ -651,13 +671,13 @@
           </select>
         </td>
         <td>
-          <select class="prod-select" data-row="${i}" onchange="onProdChange(${i})">
+          <select class="prod-select" data-row="${i}" onchange="window.onProdChange(${i})">
             <option value="">Select Product</option>
           </select>
         </td>
-        <td><input type="number" class="gst-input" data-row="${i}" placeholder="0" value="0" min="0" max="28" oninput="calcRow(${i})"/></td>
-        <td><input type="number" class="disc-input" data-row="${i}" placeholder="0" value="0" min="0" max="100" oninput="calcRow(${i})"/></td>
-        <td><input type="number" class="price-input" data-row="${i}" placeholder="0.00" value="" oninput="calcRow(${i})"/></td>
+        <td><input type="number" class="gst-input" data-row="${i}" placeholder="0" value="0" min="0" max="28" oninput="window.calcRow(${i})"/></td>
+        <td><input type="number" class="disc-input" data-row="${i}" placeholder="0" value="0" min="0" max="100" oninput="window.calcRow(${i})"/></td>
+        <td><input type="number" class="price-input" data-row="${i}" placeholder="0.00" value="" oninput="window.calcRow(${i})"/></td>
         <td><input type="number" class="total-input" data-row="${i}" readonly placeholder="0.00"/></td>
       `;
       tbody.appendChild(tr);
@@ -702,8 +722,47 @@
     calcTotals();
   }
 
+  function applyCoupon() {
+    const input = prompt('Coupon code daalo (e.g. FRALEN10, KETO15, WELCOME5):', couponCode || '');
+    if (input === null) return; // cancelled
+    const code = input.trim().toUpperCase();
+    if (!code) {
+      couponPct = 0; couponCode = '';
+      document.getElementById('coupon-note').textContent = '';
+      document.getElementById('chip-coupon').classList.remove('active');
+      calcTotals();
+      return;
+    }
+    if (COUPONS[code] !== undefined) {
+      couponPct = COUPONS[code];
+      couponCode = code;
+      document.getElementById('coupon-note').textContent = `${code} (${couponPct}% off)`;
+      document.getElementById('chip-coupon').classList.add('active');
+      calcTotals();
+    } else {
+      alert('Invalid coupon code!');
+    }
+  }
+
+  function applyLoyalty() {
+    const input = prompt('Kitne loyalty points redeem karne hain? (1 point = ₹1)', loyaltyPointsUsed || '0');
+    if (input === null) return;
+    const pts = parseFloat(input) || 0;
+    loyaltyPointsUsed = pts > 0 ? pts : 0;
+    document.getElementById('loyalty-note').textContent = loyaltyPointsUsed > 0 ? `${loyaltyPointsUsed} pts used` : '';
+    document.getElementById('chip-loyalty').classList.toggle('active', loyaltyPointsUsed > 0);
+    calcTotals();
+  }
+
+  function toggleCustomerAccount() {
+    allowCustomerAccount = !allowCustomerAccount;
+    document.getElementById('chip-account').classList.toggle('active', allowCustomerAccount);
+    document.getElementById('account-note').textContent = allowCustomerAccount ? 'ON' : '';
+    calcTotals();
+  }
+
   function calcTotals() {
-    let basic = 0, gstTotal = 0, discTotal = 0;
+    let basic = 0, gstTotal = 0, itemDiscTotal = 0;
     hasLens = false;
 
     for (let i = 1; i <= ROWS; i++) {
@@ -718,27 +777,39 @@
         const gstAmt = afterDisc * gstPct / 100;
         basic    += afterDisc;
         gstTotal += gstAmt;
-        discTotal += discAmt;
+        itemDiscTotal += discAmt;
       }
       if (type === 'Lens') hasLens = true;
     }
 
-    const sales   = basic + gstTotal;
-    const roundOff = Math.round(sales) - sales;
-    const payable  = sales + roundOff;
+    const sales = basic + gstTotal;
+
+    // Coupon discount applies on total sales
+    const couponAmt = sales * couponPct / 100;
+
+    // Loyalty discount capped so it never makes payable negative
+    const remainingAfterCoupon = sales - couponAmt;
+    loyaltyDiscountAmt = Math.min(loyaltyPointsUsed, remainingAfterCoupon);
+
+    const payableBeforeRound = sales - couponAmt - loyaltyDiscountAmt;
+    const roundOff = Math.round(payableBeforeRound) - payableBeforeRound;
+    const payable  = payableBeforeRound + roundOff;
     const advance  = parseFloat(document.getElementById('advance').value) || 0;
     const pending  = payable - advance;
 
     document.getElementById('t-basic').textContent    = basic.toFixed(2);
     document.getElementById('t-gst').textContent      = gstTotal.toFixed(2);
     document.getElementById('t-sales').textContent    = sales.toFixed(2);
-    document.getElementById('t-discount').textContent = discTotal.toFixed(2);
+    document.getElementById('t-discount').textContent = itemDiscTotal.toFixed(2);
+    document.getElementById('t-coupon').textContent   = couponAmt.toFixed(2);
+    document.getElementById('t-loyalty').textContent  = loyaltyDiscountAmt.toFixed(2);
     document.getElementById('t-roundoff').textContent = roundOff.toFixed(2);
     document.getElementById('t-payable').textContent  = payable.toFixed(2);
     document.getElementById('t-pending').textContent  = pending.toFixed(2);
+    document.getElementById('t-cust-acc').textContent = allowCustomerAccount ? pending.toFixed(2) : '0.00';
   }
 
-  window.saveOrder = function () {
+  function saveOrder() {
     const branch = document.getElementById('branch').value;
     const name   = document.getElementById('cust-name').value.trim();
     if (!branch) { alert('Branch select karo!'); return; }
@@ -750,16 +821,16 @@
     } else {
       finishSave();
     }
-  };
+  }
 
-  window.closeRx = function () {
+  function closeRx() {
     document.getElementById('rx-modal').classList.remove('open');
-  };
+  }
 
-  window.saveRx = function () {
-    window.closeRx();
+  function saveRx() {
+    closeRx();
     finishSave();
-  };
+  }
 
   function collectProducts() {
     const items = [];
@@ -797,11 +868,17 @@
       address: document.getElementById('address').value.trim(),
       notes: document.getElementById('notes').value.trim(),
       products: collectProducts(),
+      couponCode: couponCode || null,
+      couponPct: couponPct,
+      loyaltyPointsUsed: loyaltyPointsUsed,
+      allowCustomerAccount: allowCustomerAccount,
       totals: {
         basic: parseFloat(document.getElementById('t-basic').textContent) || 0,
         gst: parseFloat(document.getElementById('t-gst').textContent) || 0,
         sales: parseFloat(document.getElementById('t-sales').textContent) || 0,
-        discount: parseFloat(document.getElementById('t-discount').textContent) || 0,
+        itemDiscount: parseFloat(document.getElementById('t-discount').textContent) || 0,
+        couponDiscount: parseFloat(document.getElementById('t-coupon').textContent) || 0,
+        loyaltyDiscount: parseFloat(document.getElementById('t-loyalty').textContent) || 0,
         payable: parseFloat(document.getElementById('t-payable').textContent) || 0,
         advance: parseFloat(document.getElementById('advance').value) || 0,
         pending: parseFloat(document.getElementById('t-pending').textContent) || 0,
@@ -836,9 +913,23 @@
     }
   }
 
+  // Expose functions that are called from inline HTML attributes (onclick/onchange/oninput).
+  // Module-scoped functions are NOT automatically added to `window`, so this step is required.
+  window.onTypeChange = onTypeChange;
+  window.onProdChange = onProdChange;
+  window.calcRow = calcRow;
+  window.calcTotals = calcTotals;
+  window.applyCoupon = applyCoupon;
+  window.applyLoyalty = applyLoyalty;
+  window.toggleCustomerAccount = toggleCustomerAccount;
+  window.saveOrder = saveOrder;
+  window.closeRx = closeRx;
+  window.saveRx = saveRx;
+
   buildRows();
   calcTotals();
 </script>
 
 </body>
 </html>
+
