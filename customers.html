@@ -1,220 +1,543 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8"/>
-<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>FRALEN CRM — Customers</title>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Montserrat:wght@700;800;900&display=swap" rel="stylesheet"/>
-<style>
-  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-  :root {
-    --navy: #1B2A6B; --navy-light: #2A3F8F;
-    --accent: #4F6BF0; --accent-soft: #EEF1FE;
-    --white: #fff; --gray: #6B7280;
-    --border: #C5D3E8; --green: #10B981;
-    --orange: #F59E0B; --red: #EF4444;
-  }
-  body { font-family: 'Inter', sans-serif; background: #f0f4f8; color: #111827; min-height: 100vh; }
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>FRALEN CRM — Customers</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Montserrat:wght@700;800;900&display=swap" rel="stylesheet"/>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --navy: #1B2A6B; --navy-light: #2A3F8F;
+      --accent: #4F6BF0; --accent-soft: #EEF1FE;
+      --white: #FFFFFF; --gray: #6B7280;
+      --border: #E5E7EB; --bg: #F0F2FA;
+      --green: #10B981; --red: #EF4444; --orange: #F59E0B;
+      --sidebar-w: 220px;
+    }
+    body { font-family: 'Inter', sans-serif; background: var(--bg); color: #111827; display: flex; min-height: 100vh; }
 
-  .topbar {
-    background: var(--navy); padding: 14px 20px;
-    display: flex; align-items: center; justify-content: space-between;
-  }
-  .topbar-logo { font-family: 'Montserrat', sans-serif; font-size: 18px; font-weight: 900; color: white; letter-spacing: 3px; }
-  .topbar-logo span { color: #7B93FF; }
-  .back-btn {
-    background: rgba(255,255,255,0.15); color: white; border: none;
-    padding: 7px 14px; border-radius: 8px; font-size: 13px; font-weight: 600;
-    cursor: pointer; display: flex; align-items: center; gap: 6px;
-  }
+    /* SIDEBAR */
+    .sidebar { width: var(--sidebar-w); background: var(--navy); min-height: 100vh; display: flex; flex-direction: column; position: fixed; top: 0; left: 0; z-index: 50; }
+    .sidebar-logo { padding: 24px 20px 20px; border-bottom: 1px solid rgba(255,255,255,0.08); display: flex; align-items: center; gap: 10px; }
+    .logo-icon { width: 36px; height: 36px; background: rgba(255,255,255,0.12); border-radius: 9px; display: flex; align-items: center; justify-content: center; }
+    .logo-icon svg { width: 20px; height: 20px; stroke: white; fill: none; stroke-width: 1.8; }
+    .logo-text { font-family: 'Montserrat', sans-serif; font-size: 18px; font-weight: 900; color: white; letter-spacing: 3px; }
+    .logo-text span { color: #7B93FF; }
+    .logo-sub { font-size: 9px; color: rgba(255,255,255,0.35); letter-spacing: 2px; text-transform: uppercase; padding: 0 20px 12px; margin-top: -6px; }
+    .nav-section { padding: 16px 12px 8px; font-size: 10px; color: rgba(255,255,255,0.3); letter-spacing: 2px; text-transform: uppercase; font-weight: 600; }
+    .nav-item { display: flex; align-items: center; gap: 10px; padding: 10px 16px; margin: 2px 8px; border-radius: 10px; color: rgba(255,255,255,0.6); font-size: 13.5px; font-weight: 500; cursor: pointer; text-decoration: none; transition: background 0.15s, color 0.15s; }
+    .nav-item:hover { background: rgba(255,255,255,0.07); color: white; }
+    .nav-item.active { background: rgba(79,107,240,0.25); color: white; }
+    .nav-item svg { width: 17px; height: 17px; stroke: currentColor; fill: none; stroke-width: 1.8; flex-shrink: 0; }
+    .sidebar-bottom { margin-top: auto; padding: 16px 12px; border-top: 1px solid rgba(255,255,255,0.08); }
+    .user-card { display: flex; align-items: center; gap: 10px; padding: 10px 12px; border-radius: 10px; background: rgba(255,255,255,0.06); }
+    .user-avatar { width: 32px; height: 32px; background: var(--accent); border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 700; color: white; }
+    .user-name { font-size: 12.5px; font-weight: 600; color: white; }
+    .user-role { font-size: 11px; color: rgba(255,255,255,0.4); }
 
-  .page-title {
-    background: white; padding: 14px 20px;
-    font-size: 18px; font-weight: 700; color: var(--navy);
-    border-bottom: 2px solid var(--accent);
-    display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px;
-  }
-  .search-box {
-    padding: 8px 12px; border: 1.5px solid var(--border); border-radius: 8px;
-    font-size: 13px; font-family: 'Inter', sans-serif; width: 220px; outline: none;
-  }
-  .search-box:focus { border-color: var(--accent); }
+    /* MAIN */
+    .main { margin-left: var(--sidebar-w); flex: 1; display: flex; flex-direction: column; }
+    .topbar { background: white; padding: 0 28px; height: 64px; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid var(--border); position: sticky; top: 0; z-index: 40; }
+    .topbar-left h1 { font-size: 18px; font-weight: 700; }
+    .topbar-left p { font-size: 12px; color: var(--gray); margin-top: 1px; }
+    .topbar-right { display: flex; align-items: center; gap: 12px; }
+    .btn-primary { background: var(--navy); color: white; border: none; padding: 9px 18px; border-radius: 9px; font-size: 13px; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 6px; transition: background 0.15s; }
+    .btn-primary:hover { background: var(--navy-light); }
+    .btn-primary svg { width: 15px; height: 15px; stroke: white; fill: none; stroke-width: 2.2; }
 
-  .container { padding: 16px; max-width: 1000px; margin: 0 auto; }
+    /* CONTENT */
+    .content { padding: 28px; flex: 1; }
 
-  .stats-row { display: flex; gap: 12px; margin-bottom: 16px; flex-wrap: wrap; }
-  .stat-card {
-    background: white; border-radius: 10px; border: 1px solid var(--border);
-    padding: 14px 18px; flex: 1; min-width: 140px;
-  }
-  .stat-card .lbl { font-size: 11.5px; font-weight: 600; color: var(--gray); text-transform: uppercase; letter-spacing: 0.5px; }
-  .stat-card .val { font-size: 22px; font-weight: 800; color: var(--navy); margin-top: 4px; }
+    /* SEARCH + FILTER BAR */
+    .toolbar { display: flex; gap: 12px; margin-bottom: 20px; align-items: center; }
+    .search-box { flex: 1; position: relative; }
+    .search-box input { width: 100%; padding: 10px 14px 10px 38px; border: 1.5px solid var(--border); border-radius: 10px; font-size: 13.5px; font-family: 'Inter', sans-serif; background: white; outline: none; transition: border-color 0.2s; }
+    .search-box input:focus { border-color: var(--accent); }
+    .search-box svg { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); width: 16px; height: 16px; stroke: var(--gray); fill: none; stroke-width: 2; }
+    .filter-select { padding: 10px 14px; border: 1.5px solid var(--border); border-radius: 10px; font-size: 13px; font-family: 'Inter', sans-serif; background: white; color: #374151; outline: none; cursor: pointer; }
 
-  .table-wrap {
-    background: white; border-radius: 10px; border: 1px solid var(--border);
-    overflow: hidden; overflow-x: auto;
-  }
-  table { width: 100%; border-collapse: collapse; min-width: 640px; }
-  th {
-    background: var(--navy); color: white; font-size: 11px; font-weight: 700;
-    text-transform: uppercase; letter-spacing: 0.6px; padding: 10px 12px; text-align: left;
-  }
-  td { padding: 10px 12px; border-bottom: 1px solid #eef1f6; font-size: 13.5px; }
-  tr.cust-row { cursor: pointer; transition: background 0.15s; }
-  tr.cust-row:hover { background: var(--accent-soft); }
-  tr:last-child td { border-bottom: none; }
+    /* STATS STRIP */
+    .stats-strip { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; margin-bottom: 22px; }
+    .stat-card { background: white; border: 1px solid var(--border); border-radius: 12px; padding: 16px 18px; display: flex; align-items: center; gap: 14px; }
+    .stat-card-icon { width: 40px; height: 40px; border-radius: 10px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+    .stat-card-icon svg { width: 20px; height: 20px; fill: none; stroke-width: 1.8; }
+    .stat-card-icon.blue { background: var(--accent-soft); } .stat-card-icon.blue svg { stroke: var(--accent); }
+    .stat-card-icon.green { background: #ECFDF5; } .stat-card-icon.green svg { stroke: var(--green); }
+    .stat-card-icon.orange { background: #FFFBEB; } .stat-card-icon.orange svg { stroke: var(--orange); }
+    .stat-card-icon.red { background: #FEF2F2; } .stat-card-icon.red svg { stroke: var(--red); }
+    .stat-card-num { font-size: 22px; font-weight: 700; color: #111827; }
+    .stat-card-lbl { font-size: 11.5px; color: var(--gray); margin-top: 1px; }
 
-  .cust-name { font-weight: 700; color: var(--navy); }
-  .badge {
-    display: inline-block; padding: 2px 9px; border-radius: 20px;
-    font-size: 11.5px; font-weight: 700;
-  }
-  .badge-green { background: #D1FAE5; color: #047857; }
-  .badge-red { background: #FEE2E2; color: #B91C1C; }
-  .badge-gray { background: #F3F4F6; color: var(--gray); }
+    /* TABLE */
+    .table-wrap { background: white; border-radius: 16px; border: 1px solid var(--border); overflow: hidden; }
+    .table-header { padding: 16px 22px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; }
+    .table-header h3 { font-size: 14px; font-weight: 700; }
+    .table-header span { font-size: 12px; color: var(--gray); }
+    table { width: 100%; border-collapse: collapse; }
+    th { font-size: 11px; font-weight: 600; color: var(--gray); text-transform: uppercase; letter-spacing: 0.8px; padding: 11px 22px; text-align: left; background: #F9FAFB; border-bottom: 1px solid var(--border); }
+    td { padding: 13px 22px; font-size: 13px; border-bottom: 1px solid var(--border); color: #374151; vertical-align: middle; }
+    tr:last-child td { border-bottom: none; }
+    tr:hover td { background: #FAFBFF; }
 
-  .empty-state { text-align: center; padding: 40px 20px; color: var(--gray); }
-  .empty-state svg { width: 44px; height: 44px; stroke: var(--gray); fill: none; stroke-width: 1.5; margin-bottom: 10px; }
+    .customer-cell { display: flex; align-items: center; gap: 10px; }
+    .cust-avatar { width: 34px; height: 34px; border-radius: 9px; background: var(--accent-soft); display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 700; color: var(--accent); flex-shrink: 0; }
+    .cust-name { font-weight: 600; color: #111827; font-size: 13.5px; }
+    .cust-id { font-size: 11px; color: var(--gray); margin-top: 1px; }
 
-  .loading { text-align: center; padding: 40px; color: var(--gray); font-size: 13.5px; }
+    .badge { display: inline-block; padding: 3px 10px; border-radius: 20px; font-size: 11px; font-weight: 600; }
+    .badge.active { background: #ECFDF5; color: var(--green); }
+    .badge.due    { background: #FEF2F2; color: var(--red); }
+    .badge.clear  { background: var(--accent-soft); color: var(--accent); }
 
-  @media (max-width: 600px) {
-    .stats-row { gap: 8px; }
-    .stat-card { min-width: 100px; padding: 10px 12px; }
-    .stat-card .val { font-size: 18px; }
-  }
-</style>
+    .action-btns { display: flex; gap: 6px; }
+    .icon-btn { width: 30px; height: 30px; border-radius: 7px; border: 1px solid var(--border); background: white; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: background 0.15s, border-color 0.15s; }
+    .icon-btn:hover { background: var(--accent-soft); border-color: var(--accent); }
+    .icon-btn svg { width: 14px; height: 14px; stroke: var(--gray); fill: none; stroke-width: 2; }
+    .icon-btn:hover svg { stroke: var(--accent); }
+
+    .empty-state { padding: 60px 0; text-align: center; color: var(--gray); }
+    .empty-state svg { width: 48px; height: 48px; stroke: #D1D5DB; fill: none; stroke-width: 1.5; margin-bottom: 12px; }
+    .empty-state p { font-size: 14px; }
+    .empty-state small { font-size: 12px; color: #9CA3AF; }
+
+    /* MODAL */
+    .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.4); z-index: 200; align-items: center; justify-content: center; }
+    .modal-overlay.open { display: flex; }
+    .modal { background: white; border-radius: 20px; padding: 32px; width: 100%; max-width: 540px; max-height: 90vh; overflow-y: auto; box-shadow: 0 20px 60px rgba(0,0,0,0.15); animation: slideUp 0.25s ease; }
+    @keyframes slideUp { from { opacity:0; transform:translateY(20px); } to { opacity:1; transform:translateY(0); } }
+    .modal-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 24px; }
+    .modal-header h2 { font-size: 18px; font-weight: 700; }
+    .close-btn { width: 32px; height: 32px; border-radius: 8px; border: 1px solid var(--border); background: white; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+    .close-btn svg { width: 16px; height: 16px; stroke: var(--gray); fill: none; stroke-width: 2; }
+
+    .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+    .form-group { display: flex; flex-direction: column; gap: 6px; }
+    .form-group.full { grid-column: span 2; }
+    .form-group label { font-size: 12.5px; font-weight: 600; color: #374151; }
+    .form-group input, .form-group select, .form-group textarea {
+      padding: 10px 13px; border: 1.5px solid var(--border); border-radius: 9px;
+      font-size: 13.5px; font-family: 'Inter', sans-serif; color: #111827; outline: none;
+      transition: border-color 0.2s; background: #FAFAFA;
+    }
+    .form-group input:focus, .form-group select:focus, .form-group textarea:focus { border-color: var(--accent); background: white; }
+    .form-group textarea { resize: vertical; min-height: 70px; }
+
+    .section-label { font-size: 11px; font-weight: 700; color: var(--gray); text-transform: uppercase; letter-spacing: 1.5px; margin: 20px 0 12px; padding-bottom: 8px; border-bottom: 1px solid var(--border); grid-column: span 2; }
+
+    .rx-grid { display: grid; grid-template-columns: 80px repeat(5, 1fr); gap: 8px; align-items: center; margin-bottom: 8px; }
+    .rx-label { font-size: 12px; font-weight: 600; color: var(--gray); }
+    .rx-head { font-size: 11px; font-weight: 700; color: var(--navy); text-align: center; }
+    .rx-input { padding: 8px 6px; border: 1.5px solid var(--border); border-radius: 7px; font-size: 12.5px; text-align: center; font-family: 'Inter', sans-serif; outline: none; width: 100%; }
+    .rx-input:focus { border-color: var(--accent); }
+
+    .modal-footer { display: flex; gap: 10px; justify-content: flex-end; margin-top: 24px; }
+    .btn-cancel { padding: 10px 20px; border: 1.5px solid var(--border); border-radius: 9px; background: white; font-size: 13px; font-weight: 600; cursor: pointer; color: var(--gray); }
+    .btn-save { padding: 10px 24px; background: var(--navy); color: white; border: none; border-radius: 9px; font-size: 13px; font-weight: 600; cursor: pointer; }
+    .btn-save:hover { background: var(--navy-light); }
+  </style>
 </head>
 <body>
 
-<div class="topbar">
-  <div class="topbar-logo">FRAL<span>EN</span> CRM</div>
-  <button class="back-btn" onclick="window.location.href='dashboard.html'">← Dashboard</button>
-</div>
+<!-- SIDEBAR -->
+<aside class="sidebar">
+  <div class="sidebar-logo">
+    <div class="logo-icon"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M2 12s4-7 10-7 10 7 10 7-4 7-10 7-10-7-10-7z"/></svg></div>
+    <div class="logo-text">FRAL<span>EN</span></div>
+  </div>
+  <div class="logo-sub">Optical CRM</div>
+  <div class="nav-section">Main</div>
+  <a class="nav-item" href="dashboard.html"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>Dashboard</a>
+  <a class="nav-item" href="#"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>Search Customer</a>
+  <div class="nav-section">Manage</div>
+  <a class="nav-item" href="#"><svg viewBox="0 0 24 24"><path d="M20 7H4a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2z"/><path d="M16 3H8l-2 4h12l-2-4z"/></svg>Products</a>
+  <a class="nav-item" href="#"><svg viewBox="0 0 24 24"><path d="M5 8h14M5 8a2 2 0 1 0 0-4 2 2 0 0 0 0 4zm14 0a2 2 0 1 0 0-4 2 2 0 0 0 0 4zM5 8v10a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8"/></svg>Inventory</a>
+  <a class="nav-item" href="#"><svg viewBox="0 0 24 24"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><path d="M3 6h18M16 10a4 4 0 0 1-8 0"/></svg>Purchase</a>
+  <a class="nav-item active" href="customers.html"><svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg>Customers</a>
+  <a class="nav-item" href="#"><svg viewBox="0 0 24 24"><path d="M3 3h18v18H3zM3 9h18M9 21V9"/></svg>Sales</a>
+  <div class="nav-section">More</div>
+  <a class="nav-item" href="#"><svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>Reports</a>
+  <a class="nav-item" href="#"><svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>Account</a>
+  <div class="sidebar-bottom">
+    <div class="user-card">
+      <div class="user-avatar">A</div>
+      <div><div class="user-name">Admin</div><div class="user-role">Super Admin</div></div>
+    </div>
+  </div>
+</aside>
 
-<div class="page-title">
-  <span>Customers</span>
-  <input type="text" class="search-box" id="search" placeholder="Search name or mobile..." oninput="renderTable()"/>
-</div>
-
-<div class="container">
-  <div class="stats-row">
-    <div class="stat-card"><div class="lbl">Total Customers</div><div class="val" id="stat-total">0</div></div>
-    <div class="stat-card"><div class="lbl">Total Orders</div><div class="val" id="stat-orders">0</div></div>
-    <div class="stat-card"><div class="lbl">Total Pending (Rs)</div><div class="val" id="stat-pending">0</div></div>
+<!-- MAIN -->
+<div class="main">
+  <div class="topbar">
+    <div class="topbar-left">
+      <h1>Customers</h1>
+      <p>Manage all customer records & prescriptions</p>
+    </div>
+    <div class="topbar-right">
+      <button class="btn-primary" onclick="openModal()">
+        <svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        Add Customer
+      </button>
+    </div>
   </div>
 
-  <div class="table-wrap">
-    <table id="cust-table">
-      <thead>
-        <tr>
-          <th>Customer</th>
-          <th>Mobile</th>
-          <th>Orders</th>
-          <th>Total Spent (Rs)</th>
-          <th>Pending (Rs)</th>
-          <th>Last Order</th>
-        </tr>
-      </thead>
-      <tbody id="cust-tbody">
-        <tr><td colspan="6" class="loading">Loading customers...</td></tr>
-      </tbody>
-    </table>
+  <div class="content">
+
+    <!-- STATS STRIP -->
+    <div class="stats-strip">
+      <div class="stat-card">
+        <div class="stat-card-icon blue"><svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg></div>
+        <div><div class="stat-card-num" id="total-count">0</div><div class="stat-card-lbl">Total Customers</div></div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-card-icon green"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></div>
+        <div><div class="stat-card-num" id="active-count">0</div><div class="stat-card-lbl">Active This Month</div></div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-card-icon red"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg></div>
+        <div><div class="stat-card-num" id="due-count">0</div><div class="stat-card-lbl">Balance Due</div></div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-card-icon orange"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg></div>
+        <div><div class="stat-card-num" id="bday-count">0</div><div class="stat-card-lbl">Birthdays This Month</div></div>
+      </div>
+    </div>
+
+    <!-- TOOLBAR -->
+    <div class="toolbar">
+      <div class="search-box">
+        <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+        <input type="text" id="search-input" placeholder="Search by name, phone, or customer ID..." oninput="filterCustomers()"/>
+      </div>
+      <select class="filter-select" id="balance-filter" onchange="filterCustomers()">
+        <option value="">All Customers</option>
+        <option value="due">Balance Due</option>
+        <option value="clear">Balance Clear</option>
+      </select>
+    </div>
+
+    <!-- TABLE -->
+    <div class="table-wrap">
+      <div class="table-header">
+        <h3>Customer List</h3>
+        <span id="showing-label">0 customers</span>
+      </div>
+      <table>
+        <thead>
+          <tr>
+            <th>Customer</th>
+            <th>Phone</th>
+            <th>DOB</th>
+            <th>Last Visit</th>
+            <th>Balance</th>
+            <th>Status</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody id="customer-tbody">
+          <tr>
+            <td colspan="7">
+              <div class="empty-state">
+                <svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+                <p>No customers yet</p>
+                <small>Click "Add Customer" to get started</small>
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+  </div>
+</div>
+
+<!-- ADD CUSTOMER MODAL -->
+<div class="modal-overlay" id="modal-overlay" onclick="closeOnOverlay(event)">
+  <div class="modal">
+    <div class="modal-header">
+      <h2>Add New Customer</h2>
+      <button class="close-btn" onclick="closeModal()"><svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
+    </div>
+
+    <div class="form-grid">
+      <div class="section-label">Personal Information</div>
+
+      <div class="form-group">
+        <label>Full Name *</label>
+        <input type="text" id="f-name" placeholder="Customer name"/>
+      </div>
+      <div class="form-group">
+        <label>Phone *</label>
+        <input type="tel" id="f-phone" placeholder="03xx-xxxxxxx"/>
+      </div>
+      <div class="form-group">
+        <label>Email</label>
+        <input type="email" id="f-email" placeholder="email@example.com"/>
+      </div>
+      <div class="form-group">
+        <label>Date of Birth</label>
+        <input type="date" id="f-dob"/>
+      </div>
+      <div class="form-group full">
+        <label>Address</label>
+        <textarea id="f-address" placeholder="Full address..."></textarea>
+      </div>
+
+      <div class="section-label">Prescription (Optional)</div>
+
+      <!-- RX TABLE -->
+      <div class="form-group full">
+        <div class="rx-grid">
+          <div></div>
+          <div class="rx-head">SPH</div>
+          <div class="rx-head">CYL</div>
+          <div class="rx-head">AXIS</div>
+          <div class="rx-head">ADD</div>
+          <div class="rx-head">VA</div>
+        </div>
+        <div class="rx-grid">
+          <div class="rx-label">Right Eye</div>
+          <input class="rx-input" id="re-sph" placeholder="0.00"/>
+          <input class="rx-input" id="re-cyl" placeholder="0.00"/>
+          <input class="rx-input" id="re-axis" placeholder="0"/>
+          <input class="rx-input" id="re-add" placeholder="0.00"/>
+          <input class="rx-input" id="re-va" placeholder="6/6"/>
+        </div>
+        <div class="rx-grid">
+          <div class="rx-label">Left Eye</div>
+          <input class="rx-input" id="le-sph" placeholder="0.00"/>
+          <input class="rx-input" id="le-cyl" placeholder="0.00"/>
+          <input class="rx-input" id="le-axis" placeholder="0"/>
+          <input class="rx-input" id="le-add" placeholder="0.00"/>
+          <input class="rx-input" id="le-va" placeholder="6/6"/>
+        </div>
+        <div class="rx-grid" style="margin-top:8px">
+          <div class="rx-label" style="font-size:11px">PD</div>
+          <input class="rx-input" id="pd" placeholder="64"/>
+          <div style="grid-column:span 4; font-size:11px; color:var(--gray); align-self:center; padding-left:8px">mm (Pupillary Distance)</div>
+        </div>
+      </div>
+
+      <div class="section-label">Account Info</div>
+
+      <div class="form-group">
+        <label>Opening Balance (Rs.)</label>
+        <input type="number" id="f-balance" placeholder="0"/>
+      </div>
+      <div class="form-group">
+        <label>Balance Type</label>
+        <select id="f-balance-type">
+          <option value="clear">Clear (No Balance)</option>
+          <option value="due">Due (Customer Owes)</option>
+          <option value="advance">Advance (We Owe)</option>
+        </select>
+      </div>
+      <div class="form-group full">
+        <label>Notes</label>
+        <textarea id="f-notes" placeholder="Any special notes about this customer..."></textarea>
+      </div>
+    </div>
+
+    <div class="modal-footer">
+      <button class="btn-cancel" onclick="closeModal()">Cancel</button>
+      <button class="btn-save" onclick="saveCustomer()">Save Customer</button>
+    </div>
   </div>
 </div>
 
 <script type="module">
-  import { auth, db } from "./firebase.js";
-  import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
-  import { collection, getDocs, query, orderBy } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+  import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+  import {
+    getFirestore, collection, addDoc, getDocs, deleteDoc, doc
+  } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
-  onAuthStateChanged(auth, (user) => {
-    if (!user) window.location.href = "index.html";
-    else loadCustomers();
+  const app = initializeApp({
+    apiKey: "AIzaSyBHSFdvPAI1kz91whHbTj0rgUefVhPthLc",
+    authDomain: "loginpage1-16430.firebaseapp.com",
+    projectId: "loginpage1-16430",
+    storageBucket: "loginpage1-16430.firebasestorage.app",
+    messagingSenderId: "438297643443",
+    appId: "1:438297643443:web:a2a75a2873d2746613e3c6"
   });
 
-  let customersArr = [];
+  const auth = getAuth(app);
+  const db = getFirestore(app);
 
-  async function loadCustomers() {
-    const tbody = document.getElementById('cust-tbody');
-    try {
-      const q = query(collection(db, "orders"), orderBy("createdAt", "desc"));
-      const snap = await getDocs(q);
+  // ── Auth guard
+  onAuthStateChanged(auth, (user) => {
+    if (!user) window.location.href = "index.html";
+  });
 
-      // Group orders by mobile number
-      const map = {};
-      snap.forEach(docSnap => {
-        const o = docSnap.data();
-        const key = (o.mobile || 'unknown').trim() || 'unknown';
-        if (!map[key]) {
-          map[key] = {
-            mobile: key,
-            name: o.customerName || '(No name)',
-            orders: 0,
-            totalSpent: 0,
-            totalPending: 0,
-            lastOrder: o.createdAt || o.orderDate || ''
-          };
-        }
-        map[key].orders += 1;
-        map[key].totalSpent += (o.totals?.payable || 0);
-        map[key].totalPending += (o.totals?.pending || 0);
-        // Keep the most recent name if newer
-        if ((o.createdAt || '') > (map[key].lastOrder || '')) {
-          map[key].lastOrder = o.createdAt || o.orderDate || '';
-          if (o.customerName) map[key].name = o.customerName;
-        }
-      });
+  let customers = [];
+  let filtered = [];
 
-      customersArr = Object.values(map).sort((a, b) => (b.lastOrder || '').localeCompare(a.lastOrder || ''));
-
-      document.getElementById('stat-total').textContent = customersArr.length;
-      document.getElementById('stat-orders').textContent = snap.size;
-      const totalPending = customersArr.reduce((s, c) => s + c.totalPending, 0);
-      document.getElementById('stat-pending').textContent = totalPending.toFixed(2);
-
-      renderTable();
-    } catch (err) {
-      tbody.innerHTML = `<tr><td colspan="6" class="loading">Error loading customers: ${err.message}</td></tr>`;
-    }
+  function genId() {
+    return 'CUS-' + Date.now().toString().slice(-5);
   }
 
-  window.renderTable = function () {
-    const searchVal = (document.getElementById('search').value || '').toLowerCase();
-    const tbody = document.getElementById('cust-tbody');
-    const filtered = customersArr.filter(c =>
-      c.name.toLowerCase().includes(searchVal) || c.mobile.toLowerCase().includes(searchVal)
-    );
+  window.openModal = function () {
+    document.getElementById('modal-overlay').classList.add('open');
+  };
 
-    if (filtered.length === 0) {
-      tbody.innerHTML = `<tr><td colspan="6"><div class="empty-state">
-        <svg viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
-        <div>No customers found</div>
-      </div></td></tr>`;
+  window.closeModal = function () {
+    document.getElementById('modal-overlay').classList.remove('open');
+    clearForm();
+  };
+
+  window.closeOnOverlay = function (e) {
+    if (e.target === document.getElementById('modal-overlay')) window.closeModal();
+  };
+
+  function clearForm() {
+    ['f-name','f-phone','f-email','f-dob','f-address','f-balance','f-notes',
+     're-sph','re-cyl','re-axis','re-add','re-va',
+     'le-sph','le-cyl','le-axis','le-add','le-va','pd'].forEach(id => {
+      const el = document.getElementById(id);
+      if (el) el.value = '';
+    });
+    document.getElementById('f-balance-type').value = 'clear';
+  }
+
+  window.saveCustomer = async function () {
+    const name = document.getElementById('f-name').value.trim();
+    const phone = document.getElementById('f-phone').value.trim();
+    if (!name || !phone) {
+      alert('Name aur Phone number zaroori hai!');
       return;
     }
 
-    tbody.innerHTML = filtered.map(c => {
-      const pendingBadge = c.totalPending > 0
-        ? `<span class="badge badge-red">Rs ${c.totalPending.toFixed(2)}</span>`
-        : `<span class="badge badge-green">Cleared</span>`;
-      const lastOrderDate = c.lastOrder ? new Date(c.lastOrder).toLocaleDateString('en-IN') : '-';
-      return `
-        <tr class="cust-row" onclick="goToHistory('${encodeURIComponent(c.mobile)}')">
-          <td class="cust-name">${c.name}</td>
-          <td>${c.mobile === 'unknown' ? '<span class="badge badge-gray">No mobile</span>' : c.mobile}</td>
-          <td>${c.orders}</td>
-          <td>Rs ${c.totalSpent.toFixed(2)}</td>
-          <td>${pendingBadge}</td>
-          <td>${lastOrderDate}</td>
-        </tr>`;
+    const saveBtn = document.querySelector('.btn-save');
+    saveBtn.textContent = 'Saving...';
+    saveBtn.disabled = true;
+
+    const cust = {
+      custId: genId(),
+      name,
+      phone,
+      email: document.getElementById('f-email').value.trim(),
+      dob: document.getElementById('f-dob').value,
+      address: document.getElementById('f-address').value.trim(),
+      balance: parseFloat(document.getElementById('f-balance').value) || 0,
+      balanceType: document.getElementById('f-balance-type').value,
+      notes: document.getElementById('f-notes').value.trim(),
+      rx: {
+        re: { sph: document.getElementById('re-sph').value, cyl: document.getElementById('re-cyl').value, axis: document.getElementById('re-axis').value, add: document.getElementById('re-add').value, va: document.getElementById('re-va').value },
+        le: { sph: document.getElementById('le-sph').value, cyl: document.getElementById('le-cyl').value, axis: document.getElementById('le-axis').value, add: document.getElementById('le-add').value, va: document.getElementById('le-va').value },
+        pd: document.getElementById('pd').value
+      },
+      createdAt: new Date().toISOString(),
+      lastVisit: new Date().toLocaleDateString('en-PK')
+    };
+
+    try {
+      const docRef = await addDoc(collection(db, "users", auth.currentUser.uid, "customers"), cust);
+      cust.id = docRef.id; // Firestore doc ID
+      customers.push(cust);
+      window.closeModal();
+      renderTable(customers);
+      updateStats();
+    } catch (err) {
+      alert('Save fail hua: ' + err.message);
+    } finally {
+      saveBtn.textContent = 'Save Customer';
+      saveBtn.disabled = false;
+    }
+  };
+
+  window.deleteCustomer = async function (id) {
+    if (!confirm('Is customer ko delete karna chahte ho?')) return;
+    try {
+      await deleteDoc(doc(db, "users", auth.currentUser.uid, "customers", id));
+      customers = customers.filter(c => c.id !== id);
+      renderTable(customers);
+      updateStats();
+    } catch (err) {
+      alert('Delete fail hua: ' + err.message);
+    }
+  };
+
+  window.filterCustomers = function () {
+    const q = document.getElementById('search-input').value.toLowerCase();
+    const bal = document.getElementById('balance-filter').value;
+    filtered = customers.filter(c => {
+      const matchQ = c.name.toLowerCase().includes(q) || c.phone.includes(q) || (c.custId || '').toLowerCase().includes(q);
+      const matchBal = !bal || c.balanceType === bal;
+      return matchQ && matchBal;
+    });
+    renderTable(filtered);
+  };
+
+  function renderTable(list) {
+    const tbody = document.getElementById('customer-tbody');
+    document.getElementById('showing-label').textContent = list.length + ' customer' + (list.length !== 1 ? 's' : '');
+
+    if (list.length === 0) {
+      tbody.innerHTML = `<tr><td colspan="7"><div class="empty-state">
+        <svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>
+        <p>No customers found</p><small>Try a different search</small></div></td></tr>`;
+      return;
+    }
+
+    tbody.innerHTML = list.map(c => {
+      const initials = c.name.split(' ').map(w => w[0]).join('').slice(0,2).toUpperCase();
+      const balClass = c.balanceType === 'due' ? 'due' : c.balanceType === 'advance' ? 'clear' : 'active';
+      const balLabel = c.balanceType === 'due' ? 'Due' : c.balanceType === 'advance' ? 'Advance' : 'Clear';
+      const balColor = c.balanceType === 'due' ? 'color:var(--red)' : c.balanceType === 'advance' ? 'color:var(--accent)' : 'color:var(--green)';
+      const dobStr = c.dob ? new Date(c.dob).toLocaleDateString('en-PK', {day:'numeric', month:'short', year:'numeric'}) : '—';
+
+      return `<tr>
+        <td><div class="customer-cell">
+          <div class="cust-avatar">${initials}</div>
+          <div><div class="cust-name">${c.name}</div><div class="cust-id">${c.custId || ''}</div></div>
+        </div></td>
+        <td>${c.phone}</td>
+        <td>${dobStr}</td>
+        <td>${c.lastVisit}</td>
+        <td style="${balColor};font-weight:600">Rs. ${c.balance.toLocaleString()}</td>
+        <td><span class="badge ${balClass}">${balLabel}</span></td>
+        <td><div class="action-btns">
+          <button class="icon-btn" title="View"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M2 12s4-7 10-7 10 7 10 7-4 7-10 7-10-7-10-7z"/></svg></button>
+          <button class="icon-btn" title="Edit"><svg viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4z"/></svg></button>
+          <button class="icon-btn" title="Delete" onclick="deleteCustomer('${c.id}')"><svg viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4h6v2"/></svg></button>
+        </div></td>
+      </tr>`;
     }).join('');
-  };
+  }
 
-  window.goToHistory = function (mobile) {
-    window.location.href = `customer-history.html?mobile=${mobile}`;
-  };
+  function updateStats() {
+    const now = new Date();
+    const thisMonth = now.getMonth();
+    document.getElementById('total-count').textContent = customers.length;
+    document.getElementById('due-count').textContent = customers.filter(c => c.balanceType === 'due').length;
+    document.getElementById('active-count').textContent = customers.filter(c => {
+      return new Date(c.createdAt).getMonth() === thisMonth;
+    }).length;
+    document.getElementById('bday-count').textContent = customers.filter(c => {
+      if (!c.dob) return false;
+      return new Date(c.dob).getMonth() === thisMonth;
+    }).length;
+  }
+
+  // ── Load existing customers from Firestore on page load
+  async function loadCustomers() {
+    try {
+      const snapshot = await getDocs(collection(db, "users", auth.currentUser.uid, "customers"));
+      customers = [];
+      snapshot.forEach(docSnap => {
+        const data = docSnap.data();
+        data.id = docSnap.id;
+        customers.push(data);
+      });
+      renderTable(customers);
+      updateStats();
+    } catch (err) {
+      console.error('Load fail:', err);
+    }
+  }
+
+  loadCustomers();
 </script>
-
 </body>
 </html>
+
