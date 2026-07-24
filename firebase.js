@@ -1,4 +1,4 @@
-// firebase.js — GitHub Pages ke liye CDN version
+// firebase.js — Shared config for all pages
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 import { getAuth } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 import { getFirestore } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
@@ -9,11 +9,25 @@ const firebaseConfig = {
   projectId: "loginpage1-16430",
   storageBucket: "loginpage1-16430.firebasestorage.app",
   messagingSenderId: "438297643443",
-  appId: "1:438297643443:web:a2a75a2873d2746613e3c6",
-  measurementId: "G-X7F14D4CVJ"
+  appId: "1:438297643443:web:a2a75a2873d2746613e3c6"
 };
 
 const app = initializeApp(firebaseConfig);
-
 export const auth = getAuth(app);
 export const db = getFirestore(app);
+
+// Helper: get current user's scoped collection
+// Usage: userCol("orders") → collection(db, "users", uid, "orders")
+export function userCol(colName) {
+  const { collection } = window.__firestoreExports;
+  const user = auth.currentUser;
+  if (!user) throw new Error("Not logged in");
+  return collection(db, "users", user.uid, colName);
+}
+
+export function userDoc(colName, docId) {
+  const { doc } = window.__firestoreExports;
+  const user = auth.currentUser;
+  if (!user) throw new Error("Not logged in");
+  return doc(db, "users", user.uid, colName, docId);
+}
