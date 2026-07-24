@@ -200,7 +200,7 @@
 
   async function loadCustomerData() {
     try {
-      const q = query(collection(db, "orders"), orderBy("createdAt", "desc"));
+      const q = query(collection(db, "users", auth.currentUser.uid, "orders"), orderBy("createdAt", "desc"));
       const snap = await getDocs(q);
 
       // Filter orders for this customer
